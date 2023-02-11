@@ -1,6 +1,8 @@
 # clean-system-server
 clean-system-server 
 
+Esse código tem como objetivo limpar a pasta de cache do SCCM (System Center Configuration Manager). Ele faz isso verificando os arquivos na pasta de cache e os objetos WMI associados, e excluindo aqueles que não são referenciados há mais de 30 dias. Além disso, ele remove pastas e objetos WMI órfãos que não têm correspondência na pasta de cache no disco.
+
 ``` ps1
 
 #get CCMCache path
