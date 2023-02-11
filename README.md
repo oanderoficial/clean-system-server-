@@ -5,26 +5,43 @@ Esse código tem como objetivo limpar a pasta de cache do SCCM (System Center Co
 
 ``` ps1
 
-#get CCMCache path
-$Cachepath = ([wmi]"ROOT\ccm\SoftMgmtAgent:CacheConfig.ConfigKey='Cache'").Location
+# Get the SCCM cache path
+$SCCMCachePath = ([wmi]"ROOT\ccm\SoftMgmtAgent:CacheConfig.ConfigKey='Cache'").Location
 
-#Get Items not referenced for more than 30 days
-$OldCache = get-wmiobject -query "SELECT * FROM CacheInfoEx" -namespace "ROOT\ccm\SoftMgmtAgent" | Where-Object { ([datetime](Date) - ([System.Management.ManagementDateTimeConverter]::ToDateTime($_.LastReferenced))).Days -gt 30  }
+# Check if the cache path exists and is accessible
+if (!(Test-Path $SCCMCachePath))
+{
+    Write-Error "The SCCM cache path does not exist or is not accessible: $SCCMCachePath"
+    return
+}
 
-#delete Items on Disk
-$OldCache | % { Remove-Item -Path $_.Location -Recurse -Force -ea SilentlyContinue }
-#delete Items on WMI
-$OldCache | Remove-WmiObject
+# Get cache objects that have not been referenced for more than 30 days
+$StaleCacheObjects = Get-WmiObject -Query "SELECT * FROM CacheInfoEx" -Namespace "ROOT\ccm\SoftMgmtAgent" | Where-Object { ([datetime](Date) - ([System.Management.ManagementDateTimeConverter]::ToDateTime($_.LastReferenced))).Days -gt 30  }
 
-#Get all cached Items from Disk
-$CacheFoldersDisk = (Get-ChildItem $Cachepath).FullName
-#Get all cached Items from WMI
-$CacheFoldersWMI = get-wmiobject -query "SELECT * FROM CacheInfoEx" -namespace "ROOT\ccm\SoftMgmtAgent"
+# Delete stale cache objects from disk
+foreach ($StaleCacheObject in $StaleCacheObjects)
+{
+    try
+    {
+        Remove-Item -Path $StaleCacheObject.Location -Recurse -Force
+    }
+    catch [System.Exception]
+    {
+        Write-Error "Failed to delete stale cache object from disk: $($StaleCacheObject.Location)"
+    }
+}
 
-#Remove orphaned Folders from Disk
-$CacheFoldersDisk | % { if($_ -notin $CacheFoldersWMI.Location) { remove-item -path $_ -recurse -force -ea SilentlyContinue} }
+# Delete stale cache objects from WMI
+try
+{
+    $StaleCacheObjects | Remove-WmiObject
+}
+catch [System.Exception]
+{
+    Write-Error "Failed to delete stale cache objects from WMI."
+}
 
-#Remove orphaned WMI Objects
-$CacheFoldersWMI| % { if($_.Location -notin $CacheFoldersDisk) { $_ | Remove-WmiObject }}
+# Get all cached folders from disk
+$
 
 ```
