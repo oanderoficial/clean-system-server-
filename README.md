@@ -97,7 +97,7 @@ $
 
 # Limpeza de Atualizações do Windows
 
-<strong> Limpeza de Atualizações do Windows: </strong> 
+<strong> Dism.exe </strong> 
 <br>
 <br>
 <strong> Reduzir o Tamanho da Pasta WinSxS </strong> 
