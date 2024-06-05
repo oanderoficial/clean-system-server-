@@ -94,3 +94,29 @@ catch [System.Exception]
 $
 
 ```
+
+# Limpeza de Atualizações do Windows
+
+<strong> Limpeza de Atualizações do Windows: </strong> 
+<br>
+<br>
+<strong> Reduzir o Tamanho da Pasta WinSxS </strong> 
+<br>
+- Abra o Prompt de Comando como administrador.
+- Execute os seguintes comandos para limpar as atualizações
+<br>
+
+<strong>  Analisar a pasta WinSxS e fornecer um relatório sobre o uso de espaço: </strong>
+
+```cmd
+Dism.exe /online /Cleanup-Image /AnalyzeComponentStore
+```
+<strong> Remover os componentes obsoletos e reduzir o tamanho da pasta: </strong>
+```cmd
+DISM.exe /Online /Cleanup-Image /StartComponentCleanup /ResetBase
+```
+<strong> Remove pacotes de service pack substituídos: </strong> 
+```cmd
+dism.exe /online /Cleanup-Image /SPSuperseded
+```
+<strong> Referência: https://learn.microsoft.com/pt-br/windows-hardware/manufacture/desktop/clean-up-the-winsxs-folder?view=windows-11 </strong>
